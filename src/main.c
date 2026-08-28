@@ -81,10 +81,10 @@ double GetTime(void) {
 #endif
 
 Vertex vertices[] = {
-    {{-1, -1, 0}, {1, 0, 0, 1}},
-    {{1, -1, 0}, {0, 1, 0, 1}},
-    {{1, 1, 0}, {0, 0, 1, 1}},
-    {{-1, 1, 0}, {1, 1, 1, 1}}
+    {{-1, -1, 3}, {1, 0, 0, 1}},
+    {{1, -1, 3}, {0, 1, 0, 1}},
+    {{1, 1, 3}, {0, 0, 1, 1}},
+    {{-1, 1, 3}, {1, 1, 1, 1}}
 };
 
 u16 indices[] = {
@@ -190,18 +190,17 @@ void MainLoop(App *app) {
 
     DestroyBuffer(app, stagingBuffer);
 
-    float f = 100;
-    float n = 0.1f;
-    float aspect = (float)app->window.swapChainExtent.width / (float)app->window.swapChainExtent.height;
+    constexpr float fov = 60.0f * DEG2RAD;
+    const float aspect =
+        (float)app->window.swapChainExtent.width /
+        (float)app->window.swapChainExtent.height;
 
-    Matrix proj = {
-        .m0 = f/aspect, .m4 = 0, .m8 = 0, .m12 = 0,
-        .m1 = 0, .m5 = f, .m9 = 0, .m13 = 0,
-        .m2 = 0, .m6 = 0, .m10 = -f/(f-n), .m14 = -(f*n)/(f-n),
-        .m3 = 0, .m7 = 0, .m11 = -1, .m15 = 0
-    };
-
-    proj = MatrixIdentity();
+    const Matrix proj = MatrixPerspective(
+        fov,
+        aspect,
+        0.1f,
+        100.0f
+    );
 
     UBO ubo = {
         .model = MatrixIdentity(),
