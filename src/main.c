@@ -144,51 +144,7 @@ void BeginRenderPass(App *app, VkCommandBuffer cmdBuffer) {
 // NOTE: text chars array should be freed manually
 char *LoadFileText(const char *fileName, size_t *count)
 {
-    char *text = NULL;
 
-    if (fileName != NULL)
-    {
-        FILE *file = fopen(fileName, "rt");
-
-        if (file != NULL)
-        {
-            // WARNING: When reading a file as 'text' file,
-            // text mode causes carriage return-linefeed translation...
-            // ...but using fseek() should return correct byte-offset
-            fseek(file, 0, SEEK_END);
-            unsigned int size = (unsigned int)ftell(file);
-            fseek(file, 0, SEEK_SET);
-
-            if (size > 0)
-            {
-                text = (char *)calloc(size + 1, sizeof(char));
-
-                if (text != NULL)
-                {
-                    unsigned int _count = (unsigned int)fread(text, sizeof(char), size, file);
-
-                    // WARNING: \r\n is converted to \n on reading, so,
-                    // read bytes count gets reduced by the number of lines
-                    if (_count < size) text = (char *)realloc(text, _count + 1);
-
-                    // Zero-terminate the string
-                    text[_count] = '\0';
-
-                    if (count != nullptr) *count = _count;
-
-                    TraceLog(LOG_INFO, "FILEIO: [%s] Text file loaded successfully", fileName);
-                }
-                else TraceLog(LOG_WARNING, "FILEIO: [%s] Failed to allocated memory for file reading", fileName);
-            }
-            else TraceLog(LOG_WARNING, "FILEIO: [%s] Failed to read text file", fileName);
-
-            fclose(file);
-        }
-        else TraceLog(LOG_WARNING, "FILEIO: [%s] Failed to open text file", fileName);
-    }
-    else TraceLog(LOG_WARNING, "FILEIO: File name provided is not valid");
-
-    return text;
 }
 
 void MainLoop(App *app) {
