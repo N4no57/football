@@ -825,7 +825,7 @@ static VkVertexInputAttributeDescription *getAttributeDescriptions(u32 *count) {
 }
 
 void createDescriptorSetLayout(App *app) {
-    VkDescriptorSetLayoutBinding uboLayoutBinding = {
+    const VkDescriptorSetLayoutBinding uboLayoutBinding = {
         .binding = 0,
         .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
         .descriptorCount = 1,
@@ -833,7 +833,7 @@ void createDescriptorSetLayout(App *app) {
         .pImmutableSamplers = nullptr
     };
 
-    VkDescriptorSetLayoutCreateInfo layoutInfo = {
+    const VkDescriptorSetLayoutCreateInfo layoutInfo = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
@@ -1115,7 +1115,7 @@ void createDescriptorSets(App *app) {
         .pSetLayouts = layouts,
     };
 
-    checkVk(vkAllocateDescriptorSets(app->device, &allocInfo, app->window.descriptorSet));
+    checkVk(vkAllocateDescriptorSets(app->device, &allocInfo, app->window.descriptorSets));
 
     for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
         const VkDescriptorBufferInfo bufferInfo = {
@@ -1127,7 +1127,7 @@ void createDescriptorSets(App *app) {
         const VkWriteDescriptorSet descriptorWrite = {
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .pNext = nullptr,
-            .dstSet = app->window.descriptorSet[i],
+            .dstSet = app->window.descriptorSets[i],
             .dstBinding = 0,
             .dstArrayElement = 0,
             .descriptorCount = 1,

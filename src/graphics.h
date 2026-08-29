@@ -9,7 +9,7 @@
 #define GLFW_INCLUDE_NONE
 #include <glfw3.h>
 
-#include "raymath.h"
+#include "maths/maths.h"
 
 #ifndef MAX_FRAMES_IN_FLIGHT
 #define MAX_FRAMES_IN_FLIGHT 2
@@ -62,7 +62,7 @@ typedef struct Window {
     Buffer uniformBuffers[MAX_FRAMES_IN_FLIGHT];
     void *mappedUniformBuffers[MAX_FRAMES_IN_FLIGHT];
 
-    VkDescriptorSet descriptorSet[MAX_FRAMES_IN_FLIGHT];
+    VkDescriptorSet descriptorSets[MAX_FRAMES_IN_FLIGHT];
 } Window;
 
 typedef struct App {
@@ -94,9 +94,10 @@ typedef struct Vertex {
 } Vertex;
 
 typedef struct UBO {
-    Matrix model;
     Matrix view;
     Matrix projection;
+    Matrix reserved00;
+    Matrix reserved01;
 } UBO;
 
 void InitVulkan(App *app);

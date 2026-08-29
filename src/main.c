@@ -81,10 +81,10 @@ double GetTime(void) {
 #endif
 
 Vertex vertices[] = {
-    {{-1, -1, 3}, {1, 0, 0, 1}},
-    {{1, -1, 3}, {0, 1, 0, 1}},
-    {{1, 1, 3}, {0, 0, 1, 1}},
-    {{-1, 1, 3}, {1, 1, 1, 1}}
+    {{-0.5f, -0.5f, 0}, {1, 0, 0, 1}},
+    {{0.5f, -0.5f, 0}, {0, 1, 0, 1}},
+    {{0.5f, 0.5f, 0}, {0, 0, 1, 1}},
+    {{-0.5f, 0.5f, 0}, {1, 1, 1, 1}}
 };
 
 u16 indices[] = {
@@ -190,23 +190,22 @@ void MainLoop(App *app) {
 
     DestroyBuffer(app, stagingBuffer);
 
-    constexpr float fov = 60.0f * DEG2RAD;
+    constexpr float fov = 45.0f * DEG2RAD;
     const float aspect =
         (float)app->window.swapChainExtent.width /
         (float)app->window.swapChainExtent.height;
 
-    const Matrix proj = MatrixPerspective(
+    Matrix proj = MatrixPerspective(
         fov,
         aspect,
         0.1f,
-        100.0f
+        1000.0f
     );
 
     UBO ubo = {
-        .model = MatrixIdentity(),
         .view = MatrixLookAt(
+            (Vector3){0, 0, -1},
             (Vector3){0, 0, 0},
-            (Vector3){0, 0, 1},
             (Vector3){0, 1, 0}
         ),
         .projection = proj
@@ -239,7 +238,7 @@ void MainLoop(App *app) {
             app->pipelineLayout,
             0,
             1,
-            &app->window.descriptorSet[app->window.frameInFlightIndex],
+            &app->window.descriptorSets[app->window.frameInFlightIndex],
             0,
             nullptr
         );
@@ -267,6 +266,11 @@ void MainLoop(App *app) {
         if (glfwGetKey(app->window.glfwWindow, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(app->window.glfwWindow, GLFW_TRUE);
         }
+
+        for (size_t i = 0; i < _countof(vertices); i++) {
+            vertices[i].pos.z += dt;
+        }
+
         TracyCZoneEnd(ctx);
     }
     vkDeviceWaitIdle(app->device);
