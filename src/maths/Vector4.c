@@ -90,7 +90,7 @@ float Vector4DistanceSqr(Vector4 v1, Vector4 v2)
 
     return result;
 }
-y)
+
 Vector4 Vector4Scale(Vector4 v, float scale)
 {
     Vector4 result = { v.x*scale, v.y*scale, v.z*scale, v.w*scale };
@@ -131,7 +131,7 @@ Vector4 Vector4Normalize(Vector4 v)
 
     return result;
 }
-ts
+
 Vector4 Vector4Min(Vector4 v1, Vector4 v2)
 {
     Vector4 result = { 0 };
@@ -143,7 +143,7 @@ Vector4 Vector4Min(Vector4 v1, Vector4 v2)
 
     return result;
 }
-ts
+
 Vector4 Vector4Max(Vector4 v1, Vector4 v2)
 {
     Vector4 result = { 0 };
@@ -195,7 +195,7 @@ Vector4 Vector4Invert(Vector4 v)
     Vector4 result = { 1.0f/v.x, 1.0f/v.y, 1.0f/v.z, 1.0f/v.w };
     return result;
 }
-almost equal
+
 int Vector4Equals(Vector4 p, Vector4 q)
 {
 #if !defined(EPSILON)

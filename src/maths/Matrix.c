@@ -507,19 +507,25 @@ Matrix MatrixFrustum(double left, double right, double bottom, double top, doubl
 // NOTE: Fovy angle must be provided in radians
 Matrix MatrixPerspective(double fovY, double aspect, double nearPlane, double farPlane)
 {
-    Matrix result = {0};
+    Matrix result = { 0 };
 
-    const double tanHalfFov = tan(fovY * 0.5);
+    const double top = nearPlane*tan(fovY*0.5);
+    const double bottom = -top;
+    const double right = top*aspect;
+    const double left = -right;
 
-    result.m0 = (float)(1.0 / (aspect * tanHalfFov));
-    result.m5 = (float)(-1.0 / tanHalfFov);
+    // MatrixFrustum(-right, right, -top, top, near, far);
+    const float rl = (float)(right - left);
+    const float tb = (float)(top - bottom);
+    const float fn = (float)(farPlane - nearPlane);
 
-    result.m10 = (float)(farPlane / (nearPlane - farPlane));
+    result.m0 = ((float)nearPlane*2.0f)/rl;
+    result.m5 = -((float)nearPlane*2.0f)/tb;
+    result.m8 = ((float)right + (float)left)/rl;
+    result.m9 = ((float)top + (float)bottom)/tb;
+    result.m10 = -((float)farPlane + (float)nearPlane)/fn;
     result.m11 = -1.0f;
-
-    result.m14 = (float)(
-        (farPlane * nearPlane) / (nearPlane - farPlane)
-    );
+    result.m14 = -((float)farPlane*(float)nearPlane*2.0f)/fn;
 
     return result;
 }

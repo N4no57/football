@@ -383,32 +383,7 @@ Quaternion QuaternionSlerp(Quaternion q1, Quaternion q2, float amount); // Calcu
 Quaternion QuaternionCubicHermiteSpline(Quaternion q1, Quaternion outTangent1, Quaternion q2, Quaternion inTangent2, float t);
 
 // Calculate quaternion based on the rotation from one vector to another
-Quaternion QuaternionFromVector3ToVector3(Vector3 from, Vector3 to)
-{
-    Quaternion result = { 0 };
-
-    float cos2Theta = (from.x*to.x + from.y*to.y + from.z*to.z); // Vector3DotProduct(from, to)
-    Vector3 cross = { from.y*to.z - from.z*to.y, from.z*to.x - from.x*to.z, from.x*to.y - from.y*to.x }; // Vector3CrossProduct(from, to)
-
-    result.x = cross.x;
-    result.y = cross.y;
-    result.z = cross.z;
-    result.w = sqrtf(cross.x*cross.x + cross.y*cross.y + cross.z*cross.z + cos2Theta*cos2Theta) + cos2Theta;
-
-    // QuaternionNormalize(q);
-    // NOTE: Normalize to essentially nlerp the original and identity to 0.5
-    Quaternion q = result;
-    float length = sqrtf(q.x*q.x + q.y*q.y + q.z*q.z + q.w*q.w);
-    if (length == 0.0f) length = 1.0f;
-    float ilength = 1.0f/length;
-
-    result.x = q.x*ilength;
-    result.y = q.y*ilength;
-    result.z = q.z*ilength;
-    result.w = q.w*ilength;
-
-    return result;
-}
+Quaternion QuaternionFromVector3ToVector3(Vector3 from, Vector3 to);
 Quaternion QuaternionFromMatrix(Matrix mat); // Get a quaternion for a given rotation matrix
 Matrix QuaternionToMatrix(Quaternion q); // Get a matrix for a given quaternion
 

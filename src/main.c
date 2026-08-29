@@ -80,17 +80,6 @@ double GetTime(void) {
     TraceLog(LOG_FATAL, "Can't create a GetTime() implementation")
 #endif
 
-Vertex vertices[] = {
-    {{-0.5f, -0.5f, 0}, {1, 0, 0, 1}},
-    {{0.5f, -0.5f, 0}, {0, 1, 0, 1}},
-    {{0.5f, 0.5f, 0}, {0, 0, 1, 1}},
-    {{-0.5f, 0.5f, 0}, {1, 1, 1, 1}}
-};
-
-u16 indices[] = {
-    0, 1, 2, 2, 3, 0
-};
-
 void MainLoop(App *app);
 
 int main() {
@@ -111,6 +100,9 @@ int main() {
 
     return 0;
 }
+
+#define TINYOBJ_LOADER_C_IMPLEMENTATION
+#include "tinyobj_loader_c.h"
 
 void BeginRenderPass(App *app, VkCommandBuffer cmdBuffer) {
     VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
@@ -148,16 +140,80 @@ void BeginRenderPass(App *app, VkCommandBuffer cmdBuffer) {
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 }
 
-void print_matrix(Matrix matrix) {
-    printf("%f %f %f %f\n", matrix.m0, matrix.m1, matrix.m2, matrix.m3);
-    printf("%f %f %f %f\n", matrix.m4, matrix.m5, matrix.m6, matrix.m7);
-    printf("%f %f %f %f\n", matrix.m8, matrix.m9, matrix.m10, matrix.m11);
-    printf("%f %f %f %f\n", matrix.m12, matrix.m13, matrix.m14, matrix.m15);
+// Load text data from file, returns a '\0' terminated string
+// NOTE: text chars array should be freed manually
+char *LoadFileText(const char *fileName, size_t *count)
+{
+    char *text = NULL;
+
+    if (fileName != NULL)
+    {
+        FILE *file = fopen(fileName, "rt");
+
+        if (file != NULL)
+        {
+            // WARNING: When reading a file as 'text' file,
+            // text mode causes carriage return-linefeed translation...
+            // ...but using fseek() should return correct byte-offset
+            fseek(file, 0, SEEK_END);
+            unsigned int size = (unsigned int)ftell(file);
+            fseek(file, 0, SEEK_SET);
+
+            if (size > 0)
+            {
+                text = (char *)calloc(size + 1, sizeof(char));
+
+                if (text != NULL)
+                {
+                    unsigned int _count = (unsigned int)fread(text, sizeof(char), size, file);
+
+                    // WARNING: \r\n is converted to \n on reading, so,
+                    // read bytes count gets reduced by the number of lines
+                    if (_count < size) text = (char *)realloc(text, _count + 1);
+
+                    // Zero-terminate the string
+                    text[_count] = '\0';
+
+                    if (count != nullptr) *count = _count;
+
+                    TraceLog(LOG_INFO, "FILEIO: [%s] Text file loaded successfully", fileName);
+                }
+                else TraceLog(LOG_WARNING, "FILEIO: [%s] Failed to allocated memory for file reading", fileName);
+            }
+            else TraceLog(LOG_WARNING, "FILEIO: [%s] Failed to read text file", fileName);
+
+            fclose(file);
+        }
+        else TraceLog(LOG_WARNING, "FILEIO: [%s] Failed to open text file", fileName);
+    }
+    else TraceLog(LOG_WARNING, "FILEIO: File name provided is not valid");
+
+    return text;
 }
 
 void MainLoop(App *app) {
     double previous = GetTime();
     double current = 0;
+
+    tinyobj_attrib_t objAttributes = { 0 };
+    tinyobj_shape_t *objShapes = nullptr;
+    unsigned int objShapeCount = 0;
+
+    tinyobj_material_t *objMaterials = nullptr;
+    unsigned int objMaterialCount = 0;
+
+    size_t count;
+    char *text = LoadFileText("cube.obj", &count);
+
+    unsigned int flags = TINYOBJ_FLAG_TRIANGULATE;
+    int ret = tinyobj_parse_obj(&objAttributes, &objShapes, &objShapeCount, &objMaterials, &objMaterialCount, text, (unsigned int)count, flags);
+
+    free(text);
+
+    Vertex *vertices;
+    u16 *indices;
+
+    if (ret != TINYOBJ_SUCCESS) goto quit;
 
     const Buffer vertexBuffer = CreateBuffer(
         app,
@@ -182,6 +238,8 @@ void MainLoop(App *app) {
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
     );
 
+
+
     UploadBuffer(app, &stagingBuffer, vertices, vertexBuffer.size);
     CopyBuffer(app, &stagingBuffer, &vertexBuffer, vertexBuffer.size);
 
@@ -195,25 +253,27 @@ void MainLoop(App *app) {
         (float)app->window.swapChainExtent.width /
         (float)app->window.swapChainExtent.height;
 
-    Matrix proj = MatrixPerspective(
+    const Matrix proj = MatrixPerspective(
         fov,
         aspect,
         0.1f,
         1000.0f
     );
 
+    Vector3 pos = {2, -2, 2};
+
     UBO ubo = {
         .view = MatrixLookAt(
-            (Vector3){0, 0, -1},
+            pos,
             (Vector3){0, 0, 0},
             (Vector3){0, 1, 0}
         ),
         .projection = proj
     };
 
-    double dt = 0;
+    memcpy(app->window.mappedUniformBuffers[app->window.frameInFlightIndex], &ubo, sizeof(UBO));
 
-    float test = 0;
+    double dt = 0;
 
     while (!glfwWindowShouldClose(app->window.glfwWindow)) {
         TracyCZoneN(const ctx, "Frame", true);
@@ -267,12 +327,10 @@ void MainLoop(App *app) {
             glfwSetWindowShouldClose(app->window.glfwWindow, GLFW_TRUE);
         }
 
-        for (size_t i = 0; i < _countof(vertices); i++) {
-            vertices[i].pos.z += dt;
-        }
-
         TracyCZoneEnd(ctx);
     }
+    quit:
+
     vkDeviceWaitIdle(app->device);
 
     DestroyBuffer(app, vertexBuffer);
