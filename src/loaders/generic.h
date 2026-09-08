@@ -3,7 +3,6 @@
 
 #include <ints.h>
 
-
 char *LoadFileText(const char *fileName, size_t *count);
 char *LoadFileBinary(const char *fileName, size_t *count);
 

@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 set(VULKAN_SDK_VER "1.4.357.0")
 
-include_directories(C:/libs/clib/include)
-link_directories(C:/libs/clib/bin)
+include_directories(dependencies/clib/include)
+link_directories(dependencies/clib/bin)
 
 include_directories(dependencies/glfw)
 link_directories(dependencies/glfw)

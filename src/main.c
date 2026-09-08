@@ -50,6 +50,8 @@
 #include "volk.h"
 #include "graphics.h"
 #include "tracy/TracyC.h"
+#include "loaders/generic.h"
+#include "loaders/obj.h"
 
 #ifdef _WIN32
 typedef struct _LARGE_INTEGER { int64_t QuadPart; } LARGE_INTEGER;
@@ -102,7 +104,7 @@ int main() {
 }
 
 #define TINYOBJ_LOADER_C_IMPLEMENTATION
-#include "tinyobj_loader_c.h"
+#include "loaders/external/tinyobj_loader_c.h"
 
 void BeginRenderPass(App *app, VkCommandBuffer cmdBuffer) {
     VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
@@ -140,36 +142,14 @@ void BeginRenderPass(App *app, VkCommandBuffer cmdBuffer) {
     vkCmdSetScissor(cmdBuffer, 0, 1, &scissor);
 }
 
-// Load text data from file, returns a '\0' terminated string
-// NOTE: text chars array should be freed manually
-char *LoadFileText(const char *fileName, size_t *count)
-{
-
-}
-
 void MainLoop(App *app) {
     double previous = GetTime();
     double current = 0;
 
-    tinyobj_attrib_t objAttributes = { 0 };
-    tinyobj_shape_t *objShapes = nullptr;
-    unsigned int objShapeCount = 0;
-
-    tinyobj_material_t *objMaterials = nullptr;
-    unsigned int objMaterialCount = 0;
-
-    size_t count;
-    char *text = LoadFileText("cube.obj", &count);
-
-    unsigned int flags = TINYOBJ_FLAG_TRIANGULATE;
-    int ret = tinyobj_parse_obj(&objAttributes, &objShapes, &objShapeCount, &objMaterials, &objMaterialCount, text, (unsigned int)count, flags);
-
-    free(text);
+    OBJFile obj = LoadOBJ("cube.obj");
 
     Vertex *vertices;
     u16 *indices;
-
-    if (ret != TINYOBJ_SUCCESS) goto quit;
 
     const Buffer vertexBuffer = CreateBuffer(
         app,
