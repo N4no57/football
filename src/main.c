@@ -146,7 +146,7 @@ void MainLoop(App *app) {
     double previous = GetTime();
     double current = 0;
 
-    OBJFile obj = LoadOBJ("cube.obj");
+    // OBJFile obj = LoadOBJ("cube.obj");
 
     Vertex *vertices;
     u16 *indices;
@@ -173,8 +173,6 @@ void MainLoop(App *app) {
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
     );
-
-
 
     UploadBuffer(app, &stagingBuffer, vertices, vertexBuffer.size);
     CopyBuffer(app, &stagingBuffer, &vertexBuffer, vertexBuffer.size);
